@@ -83,6 +83,21 @@ function seedRagIndex() {
   });
 }
 
+/** Profil public en Redis : c'est lui qui fait qu'une reconstruction de
+ * l'index produit au moins un morceau à embedder (la base est simulée vide). */
+function seedProfile() {
+  mocks.store.set("public:profile", {
+    name: "Camille Test",
+    role: "Développeuse web",
+    baseline: "",
+    shortBio: "",
+    email: "",
+    phone: "",
+    location: "Paris",
+    socials: { github: "", linkedin: "", mastodon: "" },
+  });
+}
+
 function jsonRequest(url: string, body?: unknown) {
   return new NextRequest(url, {
     method: "POST",
@@ -164,6 +179,7 @@ describe("POST /api/chat — quota Gemini dépassé (429)", () => {
 describe("POST /api/admin/assistant — quota Gemini dépassé (429)", () => {
   it("admin connecté : 503 + Retry-After: 60 + message admin", async () => {
     mocks.requireAdmin.mockResolvedValue({ id: "admin-1", email: "admin@test.example", name: "Admin" });
+    seedProfile();
     const { POST } = await import("@/app/api/admin/assistant/route");
 
     const res = await POST();

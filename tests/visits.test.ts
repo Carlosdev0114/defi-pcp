@@ -2,8 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { createFakeRedis } from "./helpers/fake-redis";
 import { addDays, localDate } from "@/lib/time/paris";
+import { resetKnownPaths } from "@/lib/server/visits";
 
-// Comptage des visites : vrai code (routes + lib/server/visits) sur Redis simulé.
+// Comptage des visites : vrai code (routes + lib/server/visits) sur Redis
+// simulé. Les slugs connus viennent d'un mock déterministe : AUCUN accès à la
+// vraie base (le test doit passer sans DATABASE_URL).
 
 const m = vi.hoisted(() => ({
   redis: null as unknown as ReturnType<typeof import("./helpers/fake-redis").createFakeRedis>,
@@ -11,6 +14,9 @@ const m = vi.hoisted(() => ({
   limitKeys: [] as string[],
 }));
 vi.mock("@/lib/server/redis", () => ({ getRedis: () => m.redis }));
+vi.mock("@/lib/server/content", () => ({
+  getPublishedSlugs: async () => ({ projects: ["projet-omega"], articles: ["notation-et-recette"] }),
+}));
 vi.mock("@/lib/server/rate-limit", () => ({
   GLOBAL_KEY: "all",
   checkLimits: async (checks: [string, string][]) => {
@@ -40,6 +46,9 @@ beforeEach(() => {
   m.redis = createFakeRedis();
   m.limit = { success: true, reset: 0 };
   m.limitKeys.length = 0;
+  // Le cache des chemins connus vit sur globalThis : le vider garantit un
+  // résultat identique quel que soit l'ordre ou les fichiers voisins.
+  resetKnownPaths();
   vi.stubEnv("TRUST_PROXY", "true");
 });
 

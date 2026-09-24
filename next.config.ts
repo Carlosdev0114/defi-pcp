@@ -2,6 +2,15 @@ import type { NextConfig } from "next";
 import { buildCsp, cspOptionsFromEnv, PUBLIC_CSP_SOURCE } from "./lib/csp";
 
 const isDev = process.env.NODE_ENV !== "production";
+const storageDriver = process.env.STORAGE_DRIVER ?? "local";
+
+// Domaine du CDN Vercel Blob, autorisé pour next/image (remotePatterns) UNIQUEMENT
+// si le stockage est vercel-blob — même condition que img-src dans lib/csp.ts.
+// Le motif est le même : un sous-domaine (le compte) + .public.blob.vercel-storage.com.
+const blobRemotePatterns =
+  storageDriver === "vercel-blob"
+    ? [{ protocol: "https" as const, hostname: "*.public.blob.vercel-storage.com" }]
+    : [];
 
 // CSP des pages PUBLIQUES (statiques, en cache CDN) : variante sans nonce de
 // lib/csp.ts. /admin et /login reçoivent la variante stricte à nonce depuis
@@ -33,6 +42,7 @@ const nextConfig: NextConfig = {
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    ...(blobRemotePatterns.length ? { remotePatterns: blobRemotePatterns } : {}),
   },
   serverExternalPackages: ["@prisma/client", "bcryptjs", "sharp"],
   async headers() {

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { adminNav } from "@/lib/config/admin-nav";
 import { cn } from "@/lib/utils";
-import { Brand } from "@/components/site/SiteNav";
+import { Brand } from "@/components/ui/brand";
 
 export function AdminSidebar({ brandName }: { brandName: string }) {
   const pathname = usePathname();

@@ -7,13 +7,6 @@ import { LEAD_STATUSES } from "@/lib/crm/stages";
 const text = (max: number) => z.string().trim().max(max);
 const requiredText = (max: number, label: string) =>
   z.string().trim().min(1, `${label} requis.`).max(max);
-const slug = z
-  .string()
-  .trim()
-  .min(1)
-  .max(80)
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug invalide (a-z, 0-9, tirets).");
-const url = z.url({ protocol: /^https?$/ }).max(500);
 const isoDateTime = z.iso.datetime({ offset: true });
 const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Heure invalide (HH:MM).");
 
