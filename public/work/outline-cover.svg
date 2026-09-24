@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#4b3bf0"/>
+  <rect x="40" y="40" width="720" height="52" fill="#211a12"/>
+  <text x="56" y="77" font-family="monospace" font-size="30" fill="#fbf8f0">OUTLINE V1 — SCENARIO GRAPH</text>
+  <g>
+    <g stroke="#211a12" stroke-width="3" fill="none" opacity="0.7">
+      <path d="M260 210 L420 160 M420 160 L560 250 M420 160 L440 340 M560 250 L420 340 M260 210 L400 350 M160 300 L260 210 M160 300 L300 420"/>
+    </g>
+    <g fill="#211a12">
+      <circle cx="260" cy="210" r="14"/>
+      <circle cx="420" cy="160" r="24"/>
+      <circle cx="560" cy="250" r="14"/>
+      <circle cx="420" cy="340" r="18"/>
+      <circle cx="160" cy="300" r="18"/>
+      <circle cx="300" cy="420" r="12"/>
+      <circle cx="400" cy="470" r="20"/>
+    </g>
+  </g>
+  <g stroke="#fbf8f0" stroke-width="4" fill="none">
+    <path d="M420 160 v-34 h-8 M420 126 h8"/>
+  </g>
+  <rect x="560" y="440" width="160" height="10" fill="#211a12"/>
+  <text x="600" y="520" font-family="monospace" font-size="22" fill="#fbf8f0">draft_12.md</text>
+</svg>

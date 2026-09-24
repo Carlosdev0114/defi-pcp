@@ -1,0 +1,263 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  VISITOR
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  DISCUSSION
+  PROPOSAL
+  WON
+  LOST
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
+  CANCELLED
+  COMPLETED
+}
+
+enum MessageSender {
+  VISITOR
+  ADMIN
+  AI
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         Role     @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  appointments Appointment[] @relation("AssignedAdmin")
+  activities   Activity[]
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  summary     String
+  description String
+  techStack   String[]
+  role        String?
+  liveUrl     String?
+  repoUrl     String?
+  featured    Boolean   @default(false)
+  order       Int       @default(0)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  media       Media[]
+
+  @@index([publishedAt])
+}
+
+model Experience {
+  id          String    @id @default(cuid())
+  company     String
+  title       String
+  location    String?
+  startDate   DateTime
+  endDate     DateTime?
+  description String
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Skill {
+  id       String @id @default(cuid())
+  name     String @unique
+  category String
+  level    Int    @default(3) // 1 à 5
+  order    Int    @default(0)
+}
+
+model Article {
+  id           String    @id @default(cuid())
+  slug         String    @unique
+  title        String
+  excerpt      String
+  content      String
+  coverMediaId String?
+  coverMedia   Media?    @relation(fields: [coverMediaId], references: [id])
+  publishedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([publishedAt])
+}
+
+model Media {
+  id        String    @id @default(cuid())
+  url       String
+  altText   String?
+  mimeType  String
+  width     Int?
+  height    Int?
+  sizeBytes Int
+  createdAt DateTime  @default(now())
+
+  projectId String?
+  project   Project?  @relation(fields: [projectId], references: [id])
+  articles  Article[]
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+
+  lead      Lead?
+}
+
+model Lead {
+  id        String      @id @default(cuid())
+  contactId String      @unique
+  contact   Contact     @relation(fields: [contactId], references: [id])
+  status    LeadStatus  @default(NEW)
+  value     Int?
+  source    String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  notes     LeadNote[]
+  events    LeadEvent[]
+
+  @@index([status])
+}
+
+model LeadNote {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([leadId])
+}
+
+model LeadEvent {
+  id         String      @id @default(cuid())
+  leadId     String
+  lead       Lead        @relation(fields: [leadId], references: [id])
+  fromStatus LeadStatus?
+  toStatus   LeadStatus
+  createdAt  DateTime    @default(now())
+
+  @@index([leadId])
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  durationMin Int
+  description String?
+  active      Boolean  @default(true)
+
+  appointments Appointment[]
+  availability Availability[]
+}
+
+model Availability {
+  id        String  @id @default(cuid())
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id])
+  weekday   Int     // 0 = dimanche ... 6 = samedi
+  startTime String  // "09:00"
+  endTime   String  // "17:00"
+
+  @@index([serviceId, weekday])
+}
+
+model Appointment {
+  id           String            @id @default(cuid())
+  serviceId    String
+  service      Service           @relation(fields: [serviceId], references: [id])
+  visitorName  String
+  visitorEmail String
+  startAt      DateTime
+  endAt        DateTime
+  status       AppointmentStatus @default(PENDING)
+  notes        String?
+  assignedToId String?
+  assignedTo   User?             @relation("AssignedAdmin", fields: [assignedToId], references: [id])
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([startAt])
+  @@index([status])
+}
+
+model CalendarEvent {
+  id        String   @id @default(cuid())
+  title     String
+  startAt   DateTime
+  endAt     DateTime
+  blocked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([startAt, endAt])
+}
+
+model Conversation {
+  id           String    @id @default(cuid())
+  visitorName  String?
+  visitorEmail String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  messages     Message[]
+}
+
+model Message {
+  id             String        @id @default(cuid())
+  conversationId String
+  conversation   Conversation  @relation(fields: [conversationId], references: [id])
+  sender         MessageSender
+  content        String
+  createdAt      DateTime      @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String
+  payload   Json
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([read, createdAt])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+}

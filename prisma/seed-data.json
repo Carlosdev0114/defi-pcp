@@ -1,0 +1,464 @@
+{
+  "profile": {
+    "name": "Nina Sonier",
+    "role": "Développeuse d'interfaces & systèmes web",
+    "baseline": "Je construis des applications web qui servent à quelque chose, pour de vraies équipes, avec des délais réalistes.",
+    "shortBio": "Indépendante à Lyon depuis 2021, j'accompagne des startups et des PME sur leurs produits web : de la conception des écrans jusqu'à la mise en production. Je m'occupe aussi bien d'un câble qui tient qu'une API qui répond — les deux finissent par compter.",
+    "email": "bonjour@ninaso.moisson.fr",
+    "phone": "+33 6 12 34 56 78",
+    "location": "Lyon, France — TZ Europe/Paris",
+    "socials": {
+      "github": "github.com/ninasonier",
+      "linkedin": "linkedin.com/in/ninasonier",
+      "mastodon": "social.numerique.example/@nina"
+    }
+  },
+  "projects": [
+    {
+      "slug": "climove",
+      "title": "Climove",
+      "summary": "Simulateur d'impact carbone pour les trajets domicile-travail",
+      "description": "## Contexte\n\nUne métropole voulait pousser ses agents à changer de mode de transport sans passer par la culpabilisation. Il fallait quelque chose de ludique, factuel, et utilisable sur le téléphone dans les transports.\n\n## Le problème\n\nLes données existaient (enquêtes ménages, GPS anonymisés) mais rien de lisible pour un agent pressé entre deux rendez-vous : des tableurs et des cartes statiques.\n\n## Ce qui a été fait\n\nUn simulateur où l'on entre son trajet, et qui compare l'empreinte carbone selon le mode avec des équivalents parlants (« ça équivaut à 340 km de voiture » plutôt qu'un chiffre abstrait). Ajout d'un défi collectif par direction pour l'engagement.\n\n## Le résultat\n\nDéployé auprès de 900 agents. En 3 mois, 22 % des testeurs ont déclaré avoir changé au moins un trajet par semaine. Le défi par équipe a fait remonter l'usage le week-end.\n\n## Chiffres clés\n\n- Agents équipés : 900\n- Changement de comportement : 22%\n- Note d'usage (Lighthouse) : 98",
+      "techStack": [
+        "Next.js",
+        "TypeScript",
+        "PostgreSQL",
+        "Mapbox",
+        "Chart.js"
+      ],
+      "role": "Conception + développement",
+      "featured": true,
+      "order": 0,
+      "publishedAt": "2024-06-01T00:00:00.000Z",
+      "cover": {
+        "file": "public/work/climove-cover.svg",
+        "alt": "Couverture du projet Climove"
+      }
+    },
+    {
+      "slug": "carnet-de-cave",
+      "title": "Carnet de cave",
+      "summary": "Back-office de gestion pour un opérateur de réserves de vin",
+      "description": "## Contexte\n\nUn négociant vendait des réserves de vin à des particuliers via PDF et appels. Les ventes augmentaient, le suivi non : erreurs de doublons, stock fantôme, clients jamais relancés.\n\n## Le problème\n\nLe stock n'était pas fiable, la relance commerciale reposait sur la mémoire d'un commercial, et aucun chiffre de caisses par client n'était consolidé.\n\n## Ce qui a été fait\n\nUn back-office avec des fiches clients, un état de stock par appellation, et une gestion des paiements en plusieurs fois couplée à des relances automatiques déclenchées par des statuts.\n\n## Le résultat\n\nZéro doublon constaté trois mois après la mise en service. Le commercial a récupéré ~6 h par semaine, réinvesties dans la relation client. Les ventes en plusieurs fois ont doublé.\n\n## Chiffres clés\n\n- Doublons : 0\n- Heures récupérées / semaine : 6\n- Ventes en plusieurs fois : ×2",
+      "techStack": [
+        "React",
+        "Node.js",
+        "Prisma",
+        "PostgreSQL",
+        "Stripe"
+      ],
+      "role": "Développement fullstack",
+      "featured": true,
+      "order": 1,
+      "publishedAt": "2023-06-01T00:00:00.000Z",
+      "cover": {
+        "file": "public/work/vin-cover.svg",
+        "alt": "Couverture du projet Carnet de cave"
+      }
+    },
+    {
+      "slug": "panier-tricot",
+      "title": "Panier Tricot",
+      "summary": "Boutique et club d'ateliers pour une mercerie artisanale",
+      "description": "## Contexte\n\nUne mercerie de quartier vendait en boutique et s'essayait aux ateliers. La demande pour réserver des cours à 20 personnes n'était pas satisfaite par les formulaires papier.\n\n## Le problème\n\nAucune visibilité sur les places restantes, des annulations gérées au crayon, et une newsletter qui existait surtout dans la tête de la gérante.\n\n## Ce qui a été fait\n\nUne petite boutique en ligne couplée à un système d'inscription aux ateliers avec paiement à la réservation. La gérante gère ses créneaux depuis une page admin simple, sans intermédiaire.\n\n## Le résultat\n\nLe taux de remplissage des ateliers est passé de ~60 % à quasi complet, avec une liste d'attente automatique qui a dû être désactivée faute de créneaux.\n\n## Chiffres clés\n\n- Taux de remplissage : ~100%\n- Ventes en ligne / mois : +40 %\n- Cours par mois : 14",
+      "techStack": [
+        "Next.js",
+        "Stripe",
+        "Tailwind",
+        "Sanity CMS"
+      ],
+      "role": "Design + développement",
+      "featured": true,
+      "order": 2,
+      "publishedAt": "2023-06-01T00:00:00.000Z",
+      "cover": {
+        "file": "public/work/tricot-cover.svg",
+        "alt": "Couverture du projet Panier Tricot"
+      }
+    },
+    {
+      "slug": "outline-v1",
+      "title": "Outline v1",
+      "summary": "En cours — outil d'écriture pour scénaristes",
+      "description": "## Contexte\n\nUn projet perso né d'une frustration : structurer un scénario dans un traitement de texte classique, c'est du petit-suicide de la motivation. Les fiches personnages, l'intrigue et le déroulé n'existent pas dans le même outil.\n\n## Le problème\n\nChaque outil du marché fait une chose (fiches, timeline, rédaction) sans lien entre elles. Le coût d'entrée est trop haut pour une personne déjà débordée par son propre scénario.\n\n## Ce qui a été fait\n\nUn graphe interactif où fiches et scènes s'asso… se connectent, un mode écriture plein écran, et un export propre pour l'envoyer à un producteur sans refrapper tout.\n\n## Le résultat\n\nProjet en itération ouverte sur GitHub, ~400 étoiles, une petite liste d'attente pour la beta. Je le finance sur mon temps libre et je documente ce que j'en apprends.\n\n## Chiffres clés\n\n- Étoiles GitHub : 400\n- Liste d'attente beta : —\n- Version publique : V1 beta",
+      "techStack": [
+        "Next.js",
+        "tRPC",
+        "Prisma",
+        "PostgreSQL",
+        "Cytoscape"
+      ],
+      "role": "Side-project",
+      "featured": false,
+      "order": 3,
+      "publishedAt": "2024-06-01T00:00:00.000Z",
+      "cover": {
+        "file": "public/work/outline-cover.svg",
+        "alt": "Couverture du projet Outline v1"
+      }
+    },
+    {
+      "slug": "audit-orga",
+      "title": "Audit Orga",
+      "summary": "Grille d'audit automatisée pour le conseil indépendant",
+      "description": "## Contexte\n\nUne consultante indépendante vendait des audits organisationnels. Elle passait des soirées à compiler des PDF depuis des tableurs Excel remplis à la main.\n\n## Le problème\n\nLe rendu dépendait de la fatigue du soir, les données n'étaient pas centralisées, et chaque mission avait son propre système de notation → impossibilité de comparer dans le temps.\n\n## Ce qui a été fait\n\nUne application qui guide la saisie des réponses, calcule les scores par pilier, et génère un rapport PDF sur-mesure avec les recommandations. Les grilles restent configurables par mission.\n\n## Le résultat\n\nLe temps de production d'un rapport est passé de 2 jours à une demi-journée. La consultante a pu standardiser ses offres et faire monter son TJM.\n\n## Chiffres clés\n\n- Temps de rapport : -75%\n- Missions standardisées : 12\n- Satisfaction client : 4,8/5",
+      "techStack": [
+        "React",
+        "Node.js",
+        "Express",
+        "PostgreSQL",
+        "Puppeteer"
+      ],
+      "role": "Développement",
+      "featured": false,
+      "order": 4,
+      "publishedAt": "2022-06-01T00:00:00.000Z",
+      "cover": {
+        "file": "public/work/audit-cover.svg",
+        "alt": "Couverture du projet Audit Orga"
+      }
+    }
+  ],
+  "experiences": [
+    {
+      "company": "Solo, clients SaaS / éditeurs",
+      "title": "Développeuse indépendante — produit & interfaces",
+      "location": "Lyon (remote-friendly)",
+      "startDate": "2021-03-01T00:00:00.000Z",
+      "endDate": null,
+      "description": "J'accompagne des équipes produit sur un segment précis : transformer un besoin métier parfois flou en une interface qui tient debout et une base de code qu'on aime maintenir.\n\n- Refonte frontend d'un back-office de gestion locative : 3 200 utilisateurs actifs, temps de chargement perçu divisé par 3.\n- Conception et livraison d'un mini-portail client pour un éditeur de logiciels CRM viticole (études, devis, relances).\n- Mise en place d'une procédure de revue de code et de tests E2E qui a fait tomber les régressions avant release.\n\nStack : Next.js, TypeScript, PostgreSQL, Prisma, Tailwind, Playwright",
+      "order": 0
+    },
+    {
+      "company": "Logora — plateforme de débats en ligne",
+      "title": "Lead développeuse frontend",
+      "location": "Paris",
+      "startDate": "2018-09-01T00:00:00.000Z",
+      "endDate": "2021-02-01T00:00:00.000Z",
+      "description": "Entre 4 et 10 personnes selon les périodes, j'étais responsable technique de l'application web utilisée par les rédactions de plusieurs médias nationaux.\n\n- Mise en place d'un design system interne partagé entre trois produits (login unique, composants, tokens).\n- Reconstruction du moteur de modération temps réel qui gérait jusqu'à 8 000 signalements par jour.\n- Accompagnement de deux développeurs juniors vers le médiorat, avec revue de code et binôme sur les sujets sensibles.\n\nStack : React, Redux, Node.js, Elasticsearch, Redis",
+      "order": 1
+    },
+    {
+      "company": "Agency Kargo — sites & campagnes",
+      "title": "Développeuse web",
+      "location": "Lyon",
+      "startDate": "2016-04-01T00:00:00.000Z",
+      "endDate": "2018-08-01T00:00:00.000Z",
+      "description": "Mon premier poste sérieux. J'ai appris la différence entre « ça marche chez moi » et « ça marche chez le client » à coups de calques Photoshop et de tickets bien sentis.\n\n- Développement de sites vitrines et e-commerce sur-mesure (WooCommerce, migrations, évolutions).\n- Intégration responsive et optimisation Lighthouse pour une trentaine de projets.\n- Écriture des cahiers de recette et passage des validations client.\n\nStack : PHP, WordPress, jQuery, Sass, MySQL",
+      "order": 2
+    }
+  ],
+  "skills": [
+    {
+      "name": "TypeScript",
+      "category": "Langages",
+      "level": 4,
+      "order": 0
+    },
+    {
+      "name": "React / Next.js",
+      "category": "Frontend",
+      "level": 5,
+      "order": 1
+    },
+    {
+      "name": "Node.js",
+      "category": "Backend",
+      "level": 4,
+      "order": 2
+    },
+    {
+      "name": "PostgreSQL",
+      "category": "Données",
+      "level": 4,
+      "order": 3
+    },
+    {
+      "name": "Prisma",
+      "category": "Données",
+      "level": 4,
+      "order": 4
+    },
+    {
+      "name": "Tailwind CSS",
+      "category": "Frontend",
+      "level": 5,
+      "order": 5
+    },
+    {
+      "name": "GraphQL",
+      "category": "Backend",
+      "level": 3,
+      "order": 6
+    },
+    {
+      "name": "Design d'interfaces",
+      "category": "Produit",
+      "level": 4,
+      "order": 7
+    },
+    {
+      "name": "UX / tests utilisateurs",
+      "category": "Produit",
+      "level": 3,
+      "order": 8
+    },
+    {
+      "name": "Docker",
+      "category": "Ops",
+      "level": 3,
+      "order": 9
+    },
+    {
+      "name": "CI / déploiement (Vercel, GitHub Actions)",
+      "category": "Ops",
+      "level": 4,
+      "order": 10
+    },
+    {
+      "name": "Accessibilité web",
+      "category": "Frontend",
+      "level": 4,
+      "order": 11
+    }
+  ],
+  "articles": [
+    {
+      "slug": "pourquoi-je-revais-dun-bouton",
+      "title": "Pourquoi je rêve d'un bouton « moins bien mais livré »",
+      "excerpt": "La perfection est une dette qui s'accumule pendant que le produit dort chez le client. Petit plaidoyer pour des livraisons imparfaites mais réelles.",
+      "content": "J'ai passé des années à penser que livrer, c'était finir. Puis j'ai passé une année à rattraper des projets que des équipes parfaites n'avaient jamais finies. Le paradoxe m'a vaccinée.\n\nUn bouton « moins bien mais livré » ne veut pas dire saccager. Il veut dire : on coupe proprement, on documente ce qui est coupé, on fixe une échéance pour la suite. Le premier pas de la vraie discipline, c'est de dire à voix haute ce qu'on ne fera pas.\n\nConcrètement, je rends visible la dette plutôt que de la cacher. Une liste « à reprendre » dans le repo, un ticket par vrai problème, et jamais de silence radio sur ce qui est bancal. Le client mérite de choisir, pas de subir.\n\nLe résultat contre-intuitif : les livraisons imparfaites mais régulières ont plus fait avancer mes projets que les grands soirs de 3 h du matin. Et mes clients finissent par me croire quand je leur promets une date.",
+      "publishedAt": "2024-11-18T08:00:00.000Z"
+    },
+    {
+      "slug": "notation-et-recette",
+      "title": "La recette d'une base de code qui se laisse lire",
+      "excerpt": "On ne relit pas son propre code trois mois après avec les mêmes yeux. Voici ce que j'essaie de faire pour que le futur moi puisse comprendre le présent moi.",
+      "content": "Le code se lit mille fois plus qu'il ne s'écrit. C'est la phrase que tout le monde répète et que presque personne n'applique aux noms de variables ou à la structure des fichiers.\n\nDepuis deux ans, je me force à une règle simple : si un fichier dépasse une certaine taille ou demande plus d'une minute pour être compris, je le découpe. Pas par esthétique : par économie. Le temps passé à relire après une pause de trois semaines coûte plus cher que celui passé à découper.\n\nLes commentaires, j'en mets peu, mais je garde ceux qui expliquent le « pourquoi » d'une bizarrerie. Le « quoi », le code le dit déjà. Le « pourquoi », lui, ne se devine jamais.\n\nIl y a aussi une dimension sociale à tout ça : quand on code pour soi, on se pardonne tout. Dès que quelqu'un d'autre est susceptible de lire, on fait attention. Je code donc pour une collègue imaginaire, et bizarrement, ça marche.",
+      "publishedAt": "2024-08-02T08:00:00.000Z"
+    },
+    {
+      "slug": "freelance-et-agenda",
+      "title": "Freelance : mon agenda est un produit comme un autre",
+      "excerpt": "Entre le dispo à remplir, les RDV à protéger et les créneaux de travail profond, j'ai fini par traiter mon planning comme une base de données avec des règles.",
+      "content": "Travailler seule, ça veut dire que personne ne va me protéger de la surcharge. Le client appelle, c'est un bon client, il veut un créneau demain — et voilà comment on se retrouve à 30 h sur la semaine sans repère.\n\nMa règle de base : les créneaux de développement profond sont des rendez-vous comme les autres, avec une invitation, et je ne les déplace pas pour un café. Ils sont le produit que je vends, pas le résidu de mes journées.\n\nJ'ai automatisé tout ce qui était un aller-retour inutile : un formulaire de réservation avec les créneaux déjà bloqués, des rappels automatiques, et un récapitulatif rempli des questions à préparer. Le visiteur gagne du temps, moi aussi.\n\nC'est le genre de sujet dont on ne parle jamais dans les posts « comment je recrute mes premiers clients ». Pourtant, c'est ce qui fait la différence entre une année où on s'en sort et une année où on s'enterre.",
+      "publishedAt": "2024-04-23T08:00:00.000Z"
+    },
+    {
+      "slug": "design-system-sans-star-wars",
+      "title": "Faire un design system sans en faire un Star Wars",
+      "excerpt": "Le design system, c'est génial jusqu'au jour où on se retrouve à maintenir un méta-projet qui n'appartient à personne. Retour d'expérience sur la bonne dose.",
+      "content": "J'ai vu des design systems devenir des blocs de béton : utiles six mois, avant de freezer toute évolution visuelle parce que « ça doit rester cohérent ». La cohérence devient une excuse pour ne plus réfléchir.\n\nCe qui a fonctionné chez mon ex-employeur, ce n'était pas le système en soi, mais deux choses : des tokens de design compréhensibles (pas 400 variables dont personne ne sait l'usage), et un vrai processus de proposition de changement pour les composants.\n\nLe reste, c'était de la gouvernance. Et la gouvernance, quand on est freelance, c'est surtout : décider vite, documenter les décisions, et assumer qu'on pourra les défaire. Le système doit servir le produit, jamais l'inverse.\n\nMon conseil si on démarre : commencez par les tokens et trois composants de base (bouton, champ de saisie, liste). C'est là que naissent 80 % des incohérences visuelles. Le reste viendra par besoin réel, pas par prévision.",
+      "publishedAt": "2023-12-10T08:00:00.000Z"
+    }
+  ],
+  "services": [
+    {
+      "name": "Appel découverte",
+      "durationMin": 30,
+      "description": "Un premier échange (30 min) pour cadrer votre besoin, vérifier que je suis la bonne personne et vous orienter si ce n'est pas le cas. Tarif : Gratuit.",
+      "active": true,
+      "availability": [
+        {
+          "weekday": 1,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 1,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        },
+        {
+          "weekday": 2,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 2,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        },
+        {
+          "weekday": 3,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 3,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        },
+        {
+          "weekday": 4,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 4,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        },
+        {
+          "weekday": 5,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 5,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        }
+      ]
+    },
+    {
+      "name": "Audit express",
+      "durationMin": 90,
+      "description": "Un état des lieux technique ou UX de votre application : points de blocage, dette à ne pas contracter, plan d'action priorisé. Tarif : 350 €.",
+      "active": true,
+      "availability": [
+        {
+          "weekday": 1,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 1,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        },
+        {
+          "weekday": 2,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 2,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        },
+        {
+          "weekday": 3,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 3,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        },
+        {
+          "weekday": 4,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 4,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        },
+        {
+          "weekday": 5,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 5,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        }
+      ]
+    },
+    {
+      "name": "Atelier cadrage",
+      "durationMin": 180,
+      "description": "Une demi-journée pour transformer un besoin flou en specs actionnables : parcours, données, pages clés, livrables concrets. Tarif : 800 €.",
+      "active": true,
+      "availability": [
+        {
+          "weekday": 1,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 1,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        },
+        {
+          "weekday": 2,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 2,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        },
+        {
+          "weekday": 3,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 3,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        },
+        {
+          "weekday": 4,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 4,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        },
+        {
+          "weekday": 5,
+          "startTime": "09:00",
+          "endTime": "12:00"
+        },
+        {
+          "weekday": 5,
+          "startTime": "14:00",
+          "endTime": "18:00"
+        }
+      ]
+    },
+    {
+      "name": "Journée d'accompagnement",
+      "durationMin": 300,
+      "description": "Vous avez besoin d'un coup de main ponctuel sur une feature complexe, une refonte, ou faire monter votre équipe en gamme. Tarif : 650 € / jour.",
+      "active": true,
+      "availability": [
+        {
+          "weekday": 1,
+          "startTime": "09:00",
+          "endTime": "17:00"
+        },
+        {
+          "weekday": 2,
+          "startTime": "09:00",
+          "endTime": "17:00"
+        },
+        {
+          "weekday": 3,
+          "startTime": "09:00",
+          "endTime": "17:00"
+        },
+        {
+          "weekday": 4,
+          "startTime": "09:00",
+          "endTime": "17:00"
+        },
+        {
+          "weekday": 5,
+          "startTime": "09:00",
+          "endTime": "17:00"
+        }
+      ]
+    }
+  ]
+}
