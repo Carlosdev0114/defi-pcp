@@ -155,9 +155,9 @@ Construite par `lib/csp.ts`, en deux variantes qui ne diffèrent que par
 | `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()` |
 | `Cross-Origin-Opener-Policy` | `same-origin` |
 
-`X-Powered-By` est désactivé. L'optimiseur d'images sert les SVG locaux du
-site (illustrations faites main dans `public/`) en pièce jointe, avec une CSP
-`default-src 'self'; script-src 'none'; sandbox`.
+`X-Powered-By` est désactivé. L'optimiseur d'images refuse les SVG
+(`dangerouslyAllowSVG` désactivé) et sert ses réponses en pièce jointe, avec
+une CSP `default-src 'self'; script-src 'none'; sandbox`.
 
 ## Assistant IA
 

@@ -37,9 +37,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: {
-    // Toutes nos images sont des SVG locaux faits main (portrait, pochettes,
-    // illustrations) : on doit autoriser l'optimiseur à les servir.
-    dangerouslyAllowSVG: true,
+    // Aucun SVG servi (les médias sont réencodés en WebP) : dangerouslyAllowSVG
+    // reste désactivé. En-têtes de l'optimiseur gardés stricts par précaution.
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     ...(blobRemotePatterns.length ? { remotePatterns: blobRemotePatterns } : {}),

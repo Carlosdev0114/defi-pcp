@@ -50,9 +50,10 @@ Les figures sont légendées à la façon d'un document technique : `FIG.01 — 
 
 ## Iconographie & images
 
-- Toutes les illustrations sont des **SVG locaux faits main** (`public/`,
-  `public/work/`) : portrait encre & papier, pochettes de projets traitées
-  comme des affiches de cinéma (masques colorés sur fond de niche).
+- Les images de contenu (couvertures de projets et d'articles) sont
+  téléversées depuis la médiathèque admin. En attendant une vraie photo, le
+  portrait est un espace réservé neutre (silhouette,
+  `components/site/PortraitPlaceholder.tsx`).
 - **Aucune banque d'images** (pas d'Unsplash tel quel) ; la phase 2 définira
   le pipeline Sharp → resize → WebP/AVIF pour les uploads utilisateur.
 - Icônes en trait 1.5px, monochrome, famille unique (`components/ui/icons.tsx`).
