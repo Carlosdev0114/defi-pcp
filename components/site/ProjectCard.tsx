@@ -23,7 +23,7 @@ export default function ProjectCard({ project, priority = false }: { project: Pr
             width={project.cover.width ?? 800}
             height={project.cover.height ?? 600}
             sizes="(min-width: 1024px) 380px, (min-width: 768px) 50vw, 100vw"
-            priority={priority}
+            preload={priority}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           />
         ) : null}

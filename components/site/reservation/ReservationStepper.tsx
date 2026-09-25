@@ -88,7 +88,9 @@ export function ReservationStepper() {
           services.result?.ok ? (
             <ServiceStep services={services.result.data.items} selected={service} onPick={(s) => { setService(s); setDate(null); setSlot(null); }} />
           ) : (
-            <p className="font-mono text-sm text-ink-faint" role="status">
+            // Hauteur réservée ≈ liste des services (mesurée : 925 px mobile, 467 px desktop,
+            // selon le nombre de services en base) : la barre de navigation ne saute pas (CLS).
+            <p className="min-h-[58rem] font-mono text-sm text-ink-faint sm:min-h-[29rem]" role="status">
               {services.result && !services.result.ok ? services.result.error : "Chargement des services…"}
             </p>
           )
@@ -99,7 +101,8 @@ export function ReservationStepper() {
             {days.result?.ok ? (
               <DayStep days={days.result.data.items} selected={date} onPick={(d) => { setDate(d); setSlot(null); }} />
             ) : (
-              <p className="font-mono text-sm text-ink-faint" role="status">
+              // Hauteur réservée = grille des 14 jours (447 px mobile, 264 px desktop).
+              <p className="min-h-[28rem] font-mono text-sm text-ink-faint sm:min-h-[16.5rem]" role="status">
                 {days.result && !days.result.ok ? days.result.error : "Chargement des disponibilités…"}
               </p>
             )}

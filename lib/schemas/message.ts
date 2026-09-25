@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/schemas/zod";
 
 // Schémas de la messagerie, partagés par le widget visiteur, l'écran admin et
 // les routes API. `.strict()` : tout champ en trop (dont un identifiant de

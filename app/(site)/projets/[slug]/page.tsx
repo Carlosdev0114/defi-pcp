@@ -57,7 +57,7 @@ export default async function ProjectDetailPage({ params }: PageProps<"/projets/
             height={cover.height ?? 900}
             sizes="(min-width: 1152px) 1152px, 100vw"
             className="h-auto w-full border-2 border-ink"
-            priority
+            preload
           />
         </figure>
       ) : null}

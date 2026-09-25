@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/schemas/zod";
 
 // Schéma de réservation, partagé par le formulaire (étape « Coordonnées ») et
 // par POST /api/appointments. Une seule définition : les deux côtés ne peuvent

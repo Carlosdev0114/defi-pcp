@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/schemas/zod";
 
 // Configuration du site sans modèle Prisma (schéma imposé) : stockée en JSON
 // dans Redis (voir DATABASE.md). Chaque document est validé à l'écriture ET à

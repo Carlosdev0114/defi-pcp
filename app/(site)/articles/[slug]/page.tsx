@@ -48,7 +48,7 @@ export default async function ArticlePage({ params }: PageProps<"/articles/[slug
             height={article.coverMedia.height ?? 700}
             sizes="(min-width: 768px) 720px, 100vw"
             className="mt-10 h-auto w-full border-2 border-ink"
-            priority
+            preload
           />
         ) : null}
 

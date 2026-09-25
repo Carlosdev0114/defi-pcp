@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { ChatPanel } from "./ChatPanel";
-import { MessagingPanel } from "./MessagingPanel";
+import dynamic from "next/dynamic";
 import { CloseIcon } from "@/components/ui/icons";
+
+// Panneaux chargés à la première ouverture seulement : leur code (et Zod, via
+// les schémas de la messagerie) ne part plus avec chaque page publique.
+const ChatPanel = dynamic(() => import("./ChatPanel").then((m) => m.ChatPanel), { ssr: false });
+const MessagingPanel = dynamic(() => import("./MessagingPanel").then((m) => m.MessagingPanel), { ssr: false });
 
 function BotIcon() {
   return (
