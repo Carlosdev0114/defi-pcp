@@ -126,32 +126,32 @@ Ce document sert de feuille de route à donner à opencode. Rien n'est codé tan
 ---
 
 ## PHASE 3 — Branchement Frontend ↔ Backend
-- [ ] Remplacer les données mockées du frontend par les vraies routes API
-- [ ] Booking connecté (dispos réelles, création RDV réelle)
-- [ ] CRM connecté (leads réels générés depuis le formulaire de contact)
-- [ ] Chatbot connecté au pipeline RAG réel
-- [ ] Messagerie temps réel connectée (polling / SSE / WebSocket — choix à justifier dans ARCHITECTURE.md)
-- [ ] Notifications dashboard connectées aux vrais événements
+- [x] Remplacer les données mockées du frontend par les vraies routes API — `lib/mock/` supprimé ; contenu lu en base (pages statiques revalidées)
+- [x] Booking connecté (dispos réelles, création RDV réelle) — transaction SERIALIZABLE (`tests/booking-atomic.test.ts`)
+- [x] CRM connecté (leads réels générés depuis le formulaire de contact) — Contact + Lead NEW + LeadEvent en une transaction (`tests/contact-lead.test.ts`)
+- [x] Chatbot connecté au pipeline RAG réel — index limité au contenu publié (`tests/rag-knowledge.test.ts`)
+- [x] Messagerie temps réel connectée (polling / SSE / WebSocket — choix à justifier dans ARCHITECTURE.md) — polling court filtré par Redis, justifié dans ARCHITECTURE.md
+- [x] Notifications dashboard connectées aux vrais événements — cloche admin sur `/api/admin/updates`
 
 ---
 
 ## PHASE 4 — QA, sécurité finale, performance
-- [ ] Test manuel de chaque route /admin sans être connecté (doit être bloqué)
-- [ ] Test XSS sur les champs texte utilisateur (articles, messages, contact)
-- [ ] Test upload avec fichier non autorisé
-- [ ] Audit Lighthouse (perf, accessibilité)
-- [ ] Vérification pagination sur toutes les listes
-- [ ] Vérification rate limiting (spam login, spam chatbot)
+- [x] Test manuel de chaque route /admin sans être connecté (doit être bloqué) — automatisé, toutes les pages et routes générées depuis `app/` (`tests/qa-admin-guard.test.ts`)
+- [x] Test XSS sur les champs texte utilisateur (articles, messages, contact) — `tests/qa-xss.test.tsx`
+- [x] Test upload avec fichier non autorisé — `tests/qa-upload.test.ts`
+- [x] Audit Lighthouse (perf, accessibilité) — résultats, correctifs et limites connues dans PERFORMANCE.md
+- [x] Vérification pagination sur toutes les listes — `tests/qa-pagination.test.ts`
+- [x] Vérification rate limiting (spam login, spam chatbot) — `tests/qa-rate-limit.test.ts`, `tests/chat-global-limit.test.ts`
 
 ---
 
 ## PHASE 5 — Documentation & livrables finaux
-- [ ] `README.md`
-- [ ] `ARCHITECTURE.md` (Frontend / Backend & API / Base de données / Infrastructure / IA / Sécurité / Performance / Décisions techniques)
-- [ ] `DATABASE.md`
-- [ ] `SECURITY.md`
-- [ ] `PERFORMANCE.md`
-- [ ] `.env.example`
+- [x] `README.md`
+- [ ] `ARCHITECTURE.md` (Frontend / Backend & API / Base de données / Infrastructure / IA / Sécurité / Performance / Décisions techniques) — en cours : ne couvre que le temps réel, le budget Redis et la mesure d'audience
+- [x] `DATABASE.md`
+- [ ] `SECURITY.md` — en cours : messagerie, notifications, audience ; manquent authentification, uploads, en-têtes HTTP
+- [x] `PERFORMANCE.md`
+- [x] `.env.example`
 - [ ] Préparer les 3 décisions techniques à présenter en soutenance ("que ferais-tu avec 24h de plus ?")
 
 ---

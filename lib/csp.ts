@@ -4,7 +4,8 @@
 //
 // Deux variantes, qui ne diffèrent que par script-src :
 //  - publique : 'unsafe-inline', car Next injecte dans chaque page statique
-//    deux scripts inline (amorce + payload RSC propre à la page) qu'aucun
+//    des scripts inline `self.__next_f` (amorce + payload RSC propre à la
+//    page, découpé en morceaux : 7 scripts sur /, voir le README) qu'aucun
 //    nonce ni hash ne peut couvrir sans rendre les pages dynamiques ;
 //  - stricte (/admin, /login) : 'nonce-…' + 'strict-dynamic', plus aucun
 //    'unsafe-inline' ; ces pages sont rendues à chaque requête.
