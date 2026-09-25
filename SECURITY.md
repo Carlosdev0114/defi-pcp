@@ -76,3 +76,20 @@ le corps ou la query string, et visiteur sur les routes admin (401).
   plafond global de 600 pages vues/min (clé unique, sans IP).
 - Limite : les compteurs peuvent être gonflés jusqu'au plafond global par un
   script (pas de limite par IP, justement pour ne pas en conserver).
+
+### Dépassement du plafond : `204` silencieux, pas `429`
+
+Au-delà de **600 pages vues/min** (règle `visitGlobal`,
+`lib/server/rate-limit.ts`), `POST /api/public/visit` répond **`204` sans
+compter**, et non `429` + `Retry-After` comme les autres routes limitées.
+Choix délibéré :
+
+- **n'informe pas un robot** : la réponse est identique qu'une vue soit
+  comptée, ignorée (robot, chemin inconnu) ou refusée par le plafond ; un
+  script ne peut ni détecter le plafond ni caler son débit dessus ;
+- **le beacon ne lit pas la réponse** : `navigator.sendBeacon`
+  (`components/site/VisitBeacon.tsx`) n'expose ni statut ni en-tête, un
+  `Retry-After` ne serait donc jamais exploité par le client légitime.
+
+Comportement figé par `tests/qa-rate-limit.test.ts` (600 vues comptées,
+601ᵉ en `204` sans `Retry-After`).

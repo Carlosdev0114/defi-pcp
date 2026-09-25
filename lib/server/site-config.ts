@@ -1,5 +1,6 @@
 import "server-only";
 import type { ZodType } from "zod";
+import { unstable_rethrow } from "next/navigation";
 import { getRedis } from "@/lib/server/redis";
 import {
   assistantSchema,
@@ -55,6 +56,9 @@ async function read<K extends ConfigName>(name: K): Promise<ConfigTypes[K]> {
     if (parsed.success) return parsed.data as ConfigTypes[K];
     console.error(`site-config: ${CONFIG_KEYS[name]} invalide, valeurs par défaut utilisées`);
   } catch (error) {
+    // Signaux internes de Next (rendu dynamique, redirect, notFound) : à
+    // propager, sinon une page serait prérendue avec les valeurs par défaut.
+    unstable_rethrow(error);
     console.error(`site-config: lecture de ${CONFIG_KEYS[name]} impossible`, error);
   }
   return DEFAULTS[name] as ConfigTypes[K];
