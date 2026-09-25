@@ -147,9 +147,9 @@ Ce document sert de feuille de route à donner à opencode. Rien n'est codé tan
 
 ## PHASE 5 — Documentation & livrables finaux
 - [x] `README.md`
-- [ ] `ARCHITECTURE.md` (Frontend / Backend & API / Base de données / Infrastructure / IA / Sécurité / Performance / Décisions techniques) — en cours : ne couvre que le temps réel, le budget Redis et la mesure d'audience
+- [x] `ARCHITECTURE.md` (Frontend / Backend & API / Base de données / Infrastructure / IA / Sécurité / Performance / Décisions techniques)
 - [x] `DATABASE.md`
-- [ ] `SECURITY.md` — en cours : messagerie, notifications, audience ; manquent authentification, uploads, en-têtes HTTP
+- [x] `SECURITY.md`
 - [x] `PERFORMANCE.md`
 - [x] `.env.example`
 - [ ] Préparer les 3 décisions techniques à présenter en soutenance ("que ferais-tu avec 24h de plus ?")

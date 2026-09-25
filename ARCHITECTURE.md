@@ -1,7 +1,164 @@
 # ARCHITECTURE.md
 
-> Document en cours de rédaction. Cette section couvre le temps réel
-> (messagerie, notifications) et la mesure d'audience.
+Vue d'ensemble de l'application, puis détail du temps réel, du budget Redis
+et de la mesure d'audience, et enfin les décisions techniques structurantes.
+Le modèle de données est dans [DATABASE.md](DATABASE.md), la sécurité dans
+[SECURITY.md](SECURITY.md), les mesures dans [PERFORMANCE.md](PERFORMANCE.md).
+
+```
+Navigateur ──► Vercel (Next.js 16)
+                ├─ proxy.ts : contrôle de session, CSP à nonce, CSRF
+                ├─ pages publiques : statiques, revalidées
+                ├─ /admin : rendu à chaque requête
+                └─ route handlers /api/*
+                      ├─► Neon PostgreSQL (Prisma)   contenu, CRM, RDV, messagerie
+                      ├─► Upstash Redis (REST)       sessions, limites, caches, config, index RAG
+                      ├─► Gemini (REST)              embeddings + génération
+                      └─► Vercel Blob                médias (disque local en dev)
+```
+
+## Frontend
+
+- **Deux espaces** dans `app/`, séparés par des route groups : `(site)` pour
+  le portfolio public, `(admin)` pour `/admin` et `/login`. Chacun a son
+  layout ; celui de `/admin` vérifie la session et couvre toutes ses pages.
+- **Server Components par défaut.** Les pages publiques lisent la base
+  directement (`lib/server/content.ts`, Prisma), sans passer par l'API, et
+  rendent le contenu éditorial via `components/content/Markdown.tsx` (sans
+  HTML brut). Ne sont des Client Components que les éléments interactifs :
+  formulaires (contact, réservation), menu mobile, widgets, beacon de visite.
+- **Widgets** (assistant IA, messagerie) : un seul point d'entrée,
+  `WidgetStack`, présent sur toutes les pages publiques ; les panneaux sont
+  chargés à leur première ouverture (`next/dynamic`), pour ne pas alourdir
+  chaque page.
+- **Back-office** : chaque page `/admin` est une coquille serveur qui monte un
+  « manager » client (`ProjectsManager`, `LeadsBoard`, `MessagesBoard`…).
+  Ceux-ci appellent `/api/admin/*` via des clients typés par domaine
+  (`lib/admin`, `lib/crm`, `lib/booking`…) construits sur
+  `lib/http/client.ts`, qui ramène toute erreur à un résultat typé.
+- **Découpage** : 79 composants dans `components/` (`site`, `widgets`,
+  `admin/<domaine>`, `content`, `ui`), chacun centré sur une responsabilité.
+- **Images** : `next/image` partout, avec `sizes`, et `preload` (ou
+  `priority` pour l'illustration de l'accueil) sur l'image principale ; polices via `next/font` (auto-hébergées). Direction
+  artistique : [docs/DESIGN.md](docs/DESIGN.md).
+
+## Backend et API
+
+- **Route handlers** regroupés par public : `/api/public/*` (lectures du
+  contenu publié, créneaux, messagerie visiteur, visites), `/api/admin/*`
+  (back-office), `/api/auth/*`, et trois routes d'écriture publiques :
+  `/api/contact`, `/api/appointments`, `/api/chat`. Toute autre route `/api`
+  est refusée par `proxy.ts` (liste d'autorisation).
+- **Helpers communs** (`lib/server/api.ts`) : `withAdmin()` (session + rôle
+  relu en base) et `withErrors()` encadrent les handlers (les routes
+  `/api/auth/*` et `/api/admin/overview` gèrent leurs erreurs elles-mêmes) ;
+  `parseJsonBody()` borne la taille du corps et valide avec Zod ;
+  `parseQuery()` / `paginationSchema` / `toSkipTake()` / `paginated()`
+  uniformisent la pagination (50 éléments maximum) ; `handleApiError()`
+  traduit les erreurs Prisma et masque le reste.
+- **Logique métier** dans `lib/server/<domaine>` (`booking`, `crm`,
+  `messaging`, `appointments`, `dashboard`…) : les routes restent minces.
+- **Transactions** pour toute opération multi-tables : contact + lead +
+  événement + notification ; changement de statut d'un lead ; réservation en
+  `SERIALIZABLE` avec un rejeu (deux réservations simultanées du même
+  créneau : une seule passe) ; remplacement atomique du planning.
+- **Effets après écriture** : `revalidateContent()` régénère les pages
+  publiques concernées, invalide le cache Redis des API publiques et marque
+  l'index du chatbot comme périmé ; les compteurs temps réel sont
+  incrémentés (best-effort, voir plus bas).
+
+## Base de données
+
+PostgreSQL (Neon) via Prisma 6, avec un schéma **imposé** par l'énoncé et
+utilisé tel quel. Modèles, index, choix de modélisation et seed :
+[DATABASE.md](DATABASE.md).
+
+Redis complète la base pour ce que le schéma ne prévoit pas ou qui ne doit
+pas réveiller PostgreSQL :
+
+| Données | Clés Redis | Pourquoi pas en base |
+|---|---|---|
+| Profil public, modules actifs | `public:profile`, `public:modules` | pas de table dans le schéma imposé ; lus par toutes les pages |
+| Paramètres, réglages de l'assistant | `private:settings`, `private:assistant` | idem, lus par l'admin et le moteur du chatbot |
+| Sessions admin | `session:<jti>` | révocation sans table de sessions ni requête SQL |
+| Index du chatbot | `rag:*` | pas de pgvector dans le schéma |
+| Limites, caches, compteurs temps réel, visites | `rl:*`, `cachever:*`, `rt:*`, `visits:*` | données éphémères ou à forte fréquence d'écriture |
+
+La configuration (`lib/server/site-config.ts`) est validée par Zod à
+l'écriture **et** à la lecture ; une valeur absente ou corrompue retombe sur
+des valeurs par défaut.
+
+## Infrastructure
+
+- **Vercel** : fonctions serverless (Fluid compute) et CDN pour les pages
+  statiques. `proxy.ts` (le middleware de Next 16) s'exécute avant chaque
+  route.
+- **Neon** : PostgreSQL serverless, qui se met en veille entre deux
+  sollicitations. Le polling est conçu pour ne pas le réveiller ; le client
+  Prisma laisse 10 s pour démarrer une transaction au réveil.
+- **Upstash Redis** en REST : pas de connexion persistante à maintenir depuis
+  des fonctions éphémères, compteurs partagés par toutes les instances.
+- **Stockage des médias** derrière une interface unique
+  (`lib/server/storage`), choisie par `STORAGE_DRIVER` : disque local
+  (`./uploads`, servi par `/media/[file]`) en développement, Vercel Blob en
+  production. La CSP (`img-src`) et `remotePatterns` suivent le même réglage.
+- **Configuration** par variables d'environnement uniquement (voir
+  `.env.example` et le [README](README.md#installation-locale)).
+
+## IA : assistant RAG
+
+1. **Base de connaissances** (`lib/server/rag/knowledge.ts`) : contenu
+   **publié** uniquement (projets, articles), parcours, compétences, services
+   actifs et profil ; découpée en morceaux d'environ 900 caractères, chacun
+   préfixé par le titre de son document.
+2. **Embeddings** Gemini (`gemini-embedding-001` par défaut, 768 dimensions).
+3. **Index dans Redis** (`lib/server/rag/index.ts`) : quelques dizaines de
+   morceaux, donc une recherche exhaustive par similarité cosinus suffit.
+   L'index est marqué périmé à chaque écriture de contenu et reconstruit en
+   arrière-plan (`after()`) à la question suivante, sous verrou, au plus une
+   fois toutes les 10 min (quota Gemini). L'admin peut aussi le reconstruire
+   depuis `/admin/assistant-ia`.
+4. **Réponse** (`lib/server/rag/chat.ts`) : seuls les extraits au-dessus
+   d'un score de similarité (0,45 par défaut, `RAG_MIN_SCORE`) sont retenus ;
+   sans extrait pertinent, réponse fixe sans appel au modèle. Sinon,
+   génération (`gemini-2.5-flash` par défaut) avec un prompt système figé
+   dans le code.
+5. **Garde-fous** (anti prompt injection, limites par IP et globale, clé
+   côté serveur) : [SECURITY.md](SECURITY.md#assistant-ia).
+
+## Sécurité (synthèse)
+
+Détail dans [SECURITY.md](SECURITY.md).
+
+- Session admin : JWT signé + entrée Redis révocable, cookie `HttpOnly`,
+  contrôle en trois couches (proxy, layout, chaque route) avec relecture du
+  rôle en base.
+- Visiteur de la messagerie : cookie signé HMAC, jamais d'identifiant venant
+  du client.
+- Entrées validées par Zod, corps bornés, API refusée par défaut, erreurs
+  sans détail interne, rate limiting par IP (`getClientIp()`, voir le
+  [README](README.md#ip-client-proxy-et-rate-limiting)).
+- Uploads : type réel, taille, réencodage WebP, SVG refusé.
+- CSP à deux niveaux (nonce sur `/admin` et `/login`), HSTS et en-têtes de
+  sécurité ; aucun rendu de HTML brut.
+
+## Performance (synthèse)
+
+Mesures, correctifs et limites : [PERFORMANCE.md](PERFORMANCE.md).
+
+- **Pages publiques statiques**, revalidées au plus tard toutes les heures
+  et régénérées à chaque écriture admin qui les concerne.
+- **Profil et modules** lus via `unstable_cache` (étiquettes `site:profile`,
+  `site:modules`, expirées par `revalidateTag` à l'écriture) : sans cela, la
+  lecture Redis (`fetch` `no-store` côté Upstash) rendait tout le site
+  dynamique.
+- **Cache Redis des API publiques** (5 min), invalidé par un numéro de
+  version par ressource : pas de `SCAN` ni de suppression de clés.
+- **Polling** qui n'interroge PostgreSQL que si un compteur Redis a changé.
+- **Médias** réencodés en WebP (2 000 px maximum) puis servis par
+  `next/image` en tailles adaptées.
+- **JavaScript** : widgets chargés à la demande ; Zod ne part plus sur les
+  pages qui n'ont pas de formulaire.
 
 ## Temps réel : polling court filtré par Redis
 
@@ -132,3 +289,20 @@ Comptage minimal côté serveur, sans outil externe ni donnée personnelle :
   gonfler les compteurs jusqu'au plafond global.
 - Préféré à un comptage dans `proxy.ts`, qui compterait aussi les préchargements
   de liens (`next/link`), les requêtes HEAD et la plupart des robots.
+
+## Décisions techniques
+
+Les choix qui structurent le projet, avec l'alternative écartée à chaque fois.
+
+| Décision | Alternative écartée | Pourquoi |
+|---|---|---|
+| **Profil, modules, paramètres et réglages de l'assistant dans Redis**, en JSON validé par Zod | Une table `SiteSettings` / `Profile` dans PostgreSQL | Le schéma Prisma est **imposé** : aucune table ni colonne ajoutée. Redis était déjà là (sessions, limites). Contrepartie : ces données ne participent pas aux transactions SQL et ne sont pas dans les sauvegardes Neon |
+| **Temps réel par polling court filtré par un compteur Redis** | SSE ; WebSocket via un service tiers (Pusher, Ably) | SSE : une fonction ouverte en continu épuise le quota Vercel Hobby et devrait de toute façon interroger Redis en boucle. WebSocket tiers : un sous-traitant de plus voit les messages des visiteurs (RGPD), plus des clés et une CSP à ouvrir. La latence de 5 à 10 s suffit ici. Détail et chiffres : « Temps réel » plus haut |
+| **Visiteur de la messagerie identifié par un cookie signé HMAC** | Un compte visiteur (`User` rôle `VISITOR`) ; un secret stocké sur `Conversation` | Un compte impose inscription et mot de passe pour envoyer un message ponctuel ; le schéma imposé n'a pas de colonne secrète. Contrepartie : pas de récupération si le cookie est effacé, pas de révocation individuelle. Voir [SECURITY.md](SECURITY.md#messagerie-visiteur) |
+| **Session admin = JWT signé + entrée Redis** | JWT seul ; table de sessions | Un JWT seul n'est pas révocable avant expiration ; une table de sessions sort du schéma imposé et coûte une requête SQL à chaque vérification (dont chaque poll) |
+| **Index du chatbot dans Redis, recherche cosinus exhaustive** | pgvector dans PostgreSQL | pgvector demande une extension et une colonne vectorielle hors du schéma imposé ; avec quelques dizaines de morceaux, une recherche exhaustive en mémoire est instantanée |
+| **Pages publiques statiques** (`unstable_cache` + `revalidateTag` / `revalidatePath`) | Rendu dynamique à chaque visite | Le rendu dynamique coûtait une exécution de fonction et des lectures Redis par visite, sans cache CDN. Contrepartie : `unstable_cache` est déprécié dans Next 16 (`'use cache'` à terme) |
+| **CSP : nonce sur `/admin` et `/login`, `'unsafe-inline'` sur le public** | Nonce partout ; hashes (`experimental.sri`) | Un nonce rendrait toutes les pages dynamiques ; les hashes ne couvrent pas les scripts inline de Next (testé). Le risque est compensé par l'absence de HTML brut ; la session n'est manipulée que sous CSP stricte. Voir le [README](README.md#content-security-policy) |
+| **Couche de stockage avec deux drivers** (`local` / `vercel-blob`) | Écrire dans `public/` ; stocker les octets en base | `public/` est en lecture seule sur Vercel et mélangerait fichiers utilisateurs et code ; des octets en base alourdissent Neon et ne profitent d'aucun CDN |
+| **Médias toujours réencodés en WebP** | Conserver le fichier d'origine | Le réencodage supprime EXIF/GPS et toute charge cachée (fichier polyglotte), et donne un format et un poids homogènes pour `next/image` |
+| **Rate limiting en fenêtres glissantes dans Redis** | Compteurs en mémoire | Les instances serverless ne partagent pas leur mémoire : une limite en mémoire serait contournée en répartissant les requêtes |
