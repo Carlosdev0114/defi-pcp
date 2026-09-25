@@ -2,11 +2,11 @@ import SiteNav from "@/components/site/SiteNav";
 import SiteFooter from "@/components/site/SiteFooter";
 import { WidgetStack } from "@/components/widgets/WidgetStack";
 import { VisitBeacon } from "@/components/site/VisitBeacon";
-import { getModules } from "@/lib/server/site-config";
+import { getModules, getProfile } from "@/lib/server/site-config";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   // Assistant désactivé dans les paramètres : widget masqué (et /api/chat répond 503).
-  const { chat } = await getModules();
+  const [{ chat }, profile] = await Promise.all([getModules(), getProfile()]);
   return (
     <>
       <SiteNav />
@@ -14,7 +14,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         {children}
       </main>
       <SiteFooter />
-      <WidgetStack chatEnabled={chat} />
+      <WidgetStack chatEnabled={chat} ownerName={profile.name} />
       <VisitBeacon />
     </>
   );

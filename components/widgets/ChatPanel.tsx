@@ -9,13 +9,16 @@ import { useCooldown } from "./chat/useCooldown";
 const suggestedQuestions = [
   "Quelles technos au quotidien ?",
   "Tu as des disponibilités bientôt ?",
-  "Combien coûte un audit express ?",
+  "Quels services proposes-tu ?",
 ];
 
-const WELCOME =
-  "Bonjour 👋 Je peux répondre à des questions sur le parcours, les projets et les compétences de Nina, à partir de ses données publiques.";
+/** Nom lu dans le profil (jamais codé en dur) ; formulation neutre s'il est vide. */
+const welcome = (ownerName: string) =>
+  `Bonjour 👋 Je peux répondre à des questions sur le parcours, les projets et les compétences ${
+    ownerName ? `de ${ownerName}` : "de la personne présentée ici"
+  }, à partir de ses données publiques.`;
 
-export function ChatPanel({ onClose }: { onClose: () => void }) {
+export function ChatPanel({ onClose, ownerName }: { onClose: () => void; ownerName: string }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [pending, setPending] = useState(false);
   const { secondsLeft, start } = useCooldown();
@@ -44,7 +47,7 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-accent" aria-hidden="true" />
           <div>
-            <p className="font-mono text-sm font-medium">Assistant de Nina</p>
+            <p className="font-mono text-sm font-medium">{ownerName ? `Assistant de ${ownerName}` : "Assistant du portfolio"}</p>
             <p className="font-mono text-[0.65rem] text-cream/60">
               Réponses basées sur les données publiques du portfolio
             </p>
@@ -56,7 +59,7 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
       </header>
 
       <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 text-sm leading-relaxed">
-        <div className="max-w-[85%] border border-line-strong bg-paper px-3 py-2.5">{WELCOME}</div>
+        <div className="max-w-[85%] border border-line-strong bg-paper px-3 py-2.5">{welcome(ownerName)}</div>
         {messages.length === 0 ? (
           <>
             <p className="label-mono text-ink-faint">Questions suggérées</p>

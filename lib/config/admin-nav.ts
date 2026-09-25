@@ -13,6 +13,7 @@ export const adminNav = {
     { href: "/admin/leads", label: "Leads & CRM", glyph: "↗" },
     { href: "/admin/messages", label: "Messages", glyph: "✉" },
     { href: "/admin/agenda", label: "Agenda & résa", glyph: "☐" },
+    { href: "/admin/services", label: "Services", glyph: "◷" },
   ],
   systeme: [
     { href: "/admin/assistant-ia", label: "Assistant IA", glyph: "✦" },

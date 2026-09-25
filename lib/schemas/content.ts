@@ -1,4 +1,4 @@
-import { z } from "@/lib/schemas/zod";
+import { z } from "./zod.ts";
 
 // Schémas des contenus éditoriaux, partagés par les formulaires admin
 // (validation immédiate) et par les routes API (validation qui fait foi).

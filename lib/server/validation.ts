@@ -8,7 +8,6 @@ const text = (max: number) => z.string().trim().max(max);
 const requiredText = (max: number, label: string) =>
   z.string().trim().min(1, `${label} requis.`).max(max);
 const isoDateTime = z.iso.datetime({ offset: true });
-const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Heure invalide (HH:MM).");
 
 // --- Auth -------------------------------------------------------------------
 
@@ -37,28 +36,8 @@ export {
 
 // --- Services & agenda ------------------------------------------------------
 
-export const serviceCreateSchema = z
-  .object({
-    name: requiredText(120, "Nom"),
-    durationMin: z.number().int().min(15).max(8 * 60),
-    description: text(2000).nullish(),
-    active: z.boolean().default(true),
-  })
-  .strict();
-export const serviceUpdateSchema = serviceCreateSchema.partial().strict();
-
-export const availabilityReplaceSchema = z
-  .object({
-    slots: z
-      .array(
-        z
-          .object({ weekday: z.number().int().min(0).max(6), startTime: hhmm, endTime: hhmm })
-          .strict()
-          .refine((s) => s.startTime < s.endTime, "Plage horaire vide ou inversée."),
-      )
-      .max(50),
-  })
-  .strict();
+// Partagés avec l'écran admin des services (validation client ET serveur).
+export { serviceCreateSchema, serviceUpdateSchema, availabilityReplaceSchema } from "@/lib/schemas/services";
 
 export const calendarEventCreateSchema = z
   .object({

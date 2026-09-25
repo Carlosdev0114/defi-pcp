@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 /** Fil du visiteur. Tout est rendu en TEXTE par React (échappé) : jamais de
  * HTML ni de Markdown interprété. */
-export function VisitorThread({ messages }: { messages: ThreadMessage[] }) {
+export function VisitorThread({ messages, ownerName }: { messages: ThreadMessage[]; ownerName: string }) {
   const endRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     endRef.current?.scrollIntoView?.({ block: "end" });
@@ -24,7 +24,7 @@ export function VisitorThread({ messages }: { messages: ThreadMessage[] }) {
           >
             <p className="whitespace-pre-wrap break-words">{m.content}</p>
             <p className={cn("mt-1 font-mono text-[0.6rem]", mine ? "text-cream/60" : "text-ink-faint")}>
-              {mine ? "Vous" : "Nina"} · {formatParis(m.createdAt, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+              {mine ? "Vous" : ownerName || "Réponse"} · {formatParis(m.createdAt, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
             </p>
           </div>
         );

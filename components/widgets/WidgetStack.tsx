@@ -28,13 +28,13 @@ function MessageIcon() {
   );
 }
 
-export function WidgetStack({ chatEnabled }: { chatEnabled: boolean }) {
+export function WidgetStack({ chatEnabled, ownerName }: { chatEnabled: boolean; ownerName: string }) {
   const [active, setActive] = useState<"chat" | "msg" | null>(null);
 
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
-      {active === "chat" && chatEnabled ? <ChatPanel onClose={() => setActive(null)} /> : null}
-      {active === "msg" ? <MessagingPanel onClose={() => setActive(null)} /> : null}
+      {active === "chat" && chatEnabled ? <ChatPanel onClose={() => setActive(null)} ownerName={ownerName} /> : null}
+      {active === "msg" ? <MessagingPanel onClose={() => setActive(null)} ownerName={ownerName} /> : null}
 
       <div className="flex gap-2">
         <button

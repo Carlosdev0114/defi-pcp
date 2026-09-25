@@ -49,7 +49,7 @@ function AdminLoginFormInner() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="mt-1.5 w-full border-2 border-ink bg-cream px-3 py-2.5 text-sm outline-none focus:border-accent"
-          placeholder="admin@ninaso.moisson.fr"
+          placeholder="admin@example.com"
         />
       </label>
 

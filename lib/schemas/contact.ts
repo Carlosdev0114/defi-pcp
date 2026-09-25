@@ -1,4 +1,4 @@
-import { z } from "@/lib/schemas/zod";
+import { z } from "./zod.ts";
 
 // Schéma du formulaire de contact, partagé par le formulaire (validation
 // immédiate, messages par champ) et par POST /api/contact (validation qui
