@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { invalidate } from "@/lib/server/cache";
 import { markRagStale } from "@/lib/server/rag/index";
 import { resetKnownPaths } from "@/lib/server/visits";
+import { revalidateSiteConfig } from "@/lib/server/site-config";
 
 // Après toute écriture admin sur un contenu public (création, modification,
 // suppression, publication, dépublication) : pages statiques à régénérer
@@ -39,7 +40,10 @@ const CACHE: Partial<Record<ContentKind, ("projects" | "articles" | "experiences
 };
 
 export async function revalidateContent(kind: ContentKind, slugs: (string | null | undefined)[] = []) {
-  if (kind === "profile") revalidatePath("/", "layout"); // tout le site public
+  if (kind === "profile") {
+    revalidateSiteConfig("profile"); // lecture Redis mise en cache (site-config)
+    revalidatePath("/", "layout"); // tout le site public
+  }
   for (const path of pathsFor(kind, slugs)) revalidatePath(path);
   if (kind === "media") {
     revalidatePath("/projets/[slug]", "page");

@@ -1,6 +1,7 @@
 import "server-only";
 import type { ZodType } from "zod";
 import { unstable_rethrow } from "next/navigation";
+import { revalidateTag, unstable_cache } from "next/cache";
 import { getRedis } from "@/lib/server/redis";
 import {
   assistantSchema,
@@ -47,10 +48,43 @@ const DEFAULTS = {
 
 type ConfigTypes = { profile: Profile; modules: Modules; settings: Settings; assistant: AssistantConfig };
 
+// Profil et modules alimentent toutes les pages publiques (layouts, en-tête,
+// pied de page). Le client Upstash appelle Redis en fetch `no-store`, ce qui
+// rendait tout le site dynamique : leur lecture passe par le cache de Next,
+// étiquetée par clé, et les pages redeviennent statiques. Toute écriture admin
+// expire l'étiquette (revalidateSiteConfig) ; 1 h de revalidation en filet
+// de sécurité si une invalidation se perdait.
+export const SITE_TAGS = { profile: "site:profile", modules: "site:modules" } as const;
+type CachedName = keyof typeof SITE_TAGS;
+const CACHE_SECONDS = 3600;
+
+const fetchRaw = (name: ConfigName) => getRedis().get(CONFIG_KEYS[name]);
+
+// Seule une lecture Redis RÉUSSIE est mise en cache (une promesse rejetée ne
+// l'est pas) : une panne ne fige pas les valeurs par défaut pendant 1 h.
+const CACHED: { [K in CachedName]: () => Promise<unknown> } = {
+  profile: unstable_cache(() => fetchRaw("profile"), ["site-config", CONFIG_KEYS.profile], {
+    tags: [SITE_TAGS.profile],
+    revalidate: CACHE_SECONDS,
+  }),
+  modules: unstable_cache(() => fetchRaw("modules"), ["site-config", CONFIG_KEYS.modules], {
+    tags: [SITE_TAGS.modules],
+    revalidate: CACHE_SECONDS,
+  }),
+};
+
+const loadRaw = (name: ConfigName) => (name in CACHED ? CACHED[name as CachedName]() : fetchRaw(name));
+
+/** Après une écriture admin : la prochaine lecture, et la prochaine visite des
+ * pages qui l'utilisent, relisent Redis sans servir l'ancienne valeur. */
+export function revalidateSiteConfig(name: CachedName) {
+  revalidateTag(SITE_TAGS[name], { expire: 0 });
+}
+
 /** Lecture validée : absent, corrompu ou Redis indisponible → valeurs par défaut. */
 async function read<K extends ConfigName>(name: K): Promise<ConfigTypes[K]> {
   try {
-    const raw = await getRedis().get(CONFIG_KEYS[name]);
+    const raw = await loadRaw(name);
     if (raw === null || raw === undefined) return DEFAULTS[name] as ConfigTypes[K];
     const parsed = SCHEMAS[name].safeParse(raw);
     if (parsed.success) return parsed.data as ConfigTypes[K];
