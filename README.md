@@ -1,44 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Personal Career Platform
 
-## Getting Started
+Site personnel de candidat freelance, avec son back-office. Côté public : un
+portfolio (profil, projets, articles, parcours, compétences), un formulaire de
+contact, la réservation de rendez-vous, un assistant IA qui répond à partir
+du contenu publié, et une messagerie avec le candidat. Côté `/admin` : la
+gestion de tout ce contenu, un CRM des contacts et leads, l'agenda, la
+messagerie, les médias et les statistiques de visite.
 
-First, run the development server:
+Aucun module n'est simulé : chaque écran lit et écrit de vraies données.
+
+## Documentation
+
+| Document | Contenu |
+|---|---|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Temps réel (polling filtré par Redis), budget Redis, mesure d'audience |
+| [DATABASE.md](DATABASE.md) | Modèle de données Prisma, choix de modélisation, ce qui vit dans Redis |
+| [SECURITY.md](SECURITY.md) | Messagerie visiteur (cookie signé), notifications, mesure d'audience |
+| [PERFORMANCE.md](PERFORMANCE.md) | Mesures Lighthouse, correctifs appliqués, limites connues |
+| [docs/DESIGN.md](docs/DESIGN.md) | Direction artistique |
+
+## Stack
+
+- **Next.js 16** (App Router, Turbopack), React 19, Tailwind CSS 4
+- **Prisma 6** + **PostgreSQL (Neon)** : contenu, CRM, rendez-vous, messagerie
+- **Redis (Upstash, API REST)** : sessions, rate limiting, cache des API
+  publiques, configuration du site (profil, modules), index du chatbot,
+  compteurs temps réel et de visites
+- **Google Gemini** : réponses et embeddings de l'assistant (RAG), appelés
+  depuis le serveur uniquement
+- **Vercel Blob** : stockage des médias en production (disque local en
+  développement), images réencodées en WebP par `sharp`, servies par
+  `next/image`
+- Zod 4 (validation partagée client/serveur), `jose` (JWT de session),
+  `bcryptjs`, `react-markdown`
+- Tests : **Vitest**. Déploiement prévu : **Vercel**
+
+## Installation locale
+
+Prérequis : **Node ≥ 22.18** (le seed exécute directement les schémas
+TypeScript), une base Neon, une base Upstash Redis, une clé Gemini.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install                 # lance aussi `prisma generate`
+cp .env.example .env        # puis remplir .env (jamais versionné)
+npm run db:migrate          # prisma migrate deploy
+npm run db:seed             # compte admin + contenu initial
+npm run dev                 # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Variables d'environnement (détail et valeurs d'exemple dans `.env.example`) :
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Rôle |
+|---|---|
+| `DATABASE_URL` | PostgreSQL Neon (`?sslmode=require`) |
+| `REDIS_URL`, `REDIS_TOKEN` | Upstash Redis (REST) |
+| `SESSION_SECRET` | Signature des sessions admin et des jetons visiteur, 32 caractères minimum |
+| `GEMINI_API_KEY` | Assistant IA (optionnels : `GEMINI_MODEL`, `GEMINI_EMBEDDING_MODEL`, `RAG_MIN_SCORE`) |
+| `STORAGE_DRIVER` | `local` (défaut, dossier `UPLOAD_DIR` ou `./uploads`) ou `vercel-blob` (+ `BLOB_READ_WRITE_TOKEN`) |
+| `TRUST_PROXY`, `TRUST_PROXY_HOPS` | Lecture de l'IP client derrière un proxy (voir plus bas) |
+| `CHAT_GLOBAL_PER_MINUTE` | Limite globale du chatbot, défaut 8/min |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Compte admin créé par le seed (mot de passe de 8 caractères minimum) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Le seed est **create-only** : le relancer n'écrase aucune modification faite
+depuis le back-office ; seul le mot de passe admin est resynchronisé. Le
+profil public est écrit dans Redis seulement s'il est absent.
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Commande | Effet |
+|---|---|
+| `npm run dev` | Serveur de développement |
+| `npm run build` / `npm start` | Build de production / serveur de production |
+| `npm run lint` | ESLint |
+| `npm test` | Tests Vitest, sans réseau (Redis, base et Gemini remplacés) |
+| `npm run db:migrate` | Applique les migrations (`prisma migrate deploy`) |
+| `npm run db:seed` | Seed idempotent |
+| `RUN_DB_TESTS=1 npx vitest run tests/booking-db.integration.test.ts` | Test d'intégration contre la vraie base : 5 réservations simultanées du même créneau donnent exactement 1 × 201 et 4 × 409. Supprime ses données à la fin |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Le typage se vérifie avec `npx tsc --noEmit`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Rendu et mise en cache
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Les pages publiques (`/`, `/projets`, `/projets/[slug]`, `/articles`,
+`/articles/[slug]`, `/parcours`, `/competences`, `/a-propos`, `/contact`,
+`/reservation`) sont **statiques** : prérendues au build, revalidées au plus
+tard toutes les heures, et régénérées dès qu'une écriture admin les concerne
+(`revalidatePath` pour le contenu, `revalidateTag` pour le profil et les
+modules). Un brouillon ou un contenu dépublié renvoie 404. `/admin`, `/login`
+et `/media/[file]` sont rendues à chaque requête.
 
 ## IP client, proxy et rate limiting
 
-Le rate limiting (login, chat, contact, réservation) identifie les clients par
-leur IP, via une fonction unique : `getClientIp()` (`lib/server/client-ip.ts`).
+Le rate limiting (login, chat, contact, réservation, messagerie) identifie les
+clients par leur IP, via une fonction unique : `getClientIp()`
+(`lib/server/client-ip.ts`).
 
 - **Headers proxy ignorés par défaut.** `x-real-ip` / `x-forwarded-for` sont
   écrits par le client tant qu'aucun proxy de confiance ne les réécrit. Ils ne
@@ -69,7 +124,7 @@ Deux politiques, construites par `lib/csp.ts` :
 
 | Routes | Source de l'en-tête | `script-src` | Rendu |
 | --- | --- | --- | --- |
-| Pages publiques | `next.config.ts` (statique) | `'self' 'unsafe-inline'` | statique, cache CDN (`s-maxage=31536000`) |
+| Pages publiques | `next.config.ts` (statique) | `'self' 'unsafe-inline'` | statique, revalidé (voir « Rendu et mise en cache ») |
 | `/admin/*`, `/login` | `proxy.ts` (par requête) | `'self' 'nonce-…' 'strict-dynamic'` | dynamique |
 
 Les autres directives sont communes : `default-src 'self'`, `object-src 'none'`,
@@ -82,36 +137,40 @@ attributs `style={…}`, qu'un nonce ne couvre pas.
 
 ### Pourquoi `'unsafe-inline'` reste sur les pages publiques
 
-Next.js injecte dans chaque page deux scripts inline : l'amorce
-`self.__next_f` et le payload RSC de la page (≈ 34 Ko sur `/`, différent
-d'une page à l'autre). Aucun script inline ne vient de notre code.
+Next.js injecte dans chaque page des scripts inline `self.__next_f` :
+l'amorce, puis le payload RSC de la page découpé en plusieurs morceaux (7
+scripts au total sur `/`, ≈ 34 Kio non compressés, 6 Kio en gzip, mesurés
+sur le HTML prérendu ; différent d'une page à l'autre). Aucun script inline
+ne vient de notre code.
 
-- **Nonce** : impose le rendu dynamique de chaque page, donc la perte du cache
-  CDN (`s-maxage` → `no-store`) et une exécution de fonction par visite.
+- **Nonce** : un nonce change à chaque requête, il impose donc de rendre
+  chaque page à la demande. Les pages publiques perdraient leur rendu
+  statique et le cache CDN, avec une exécution de fonction par visite.
 - **`experimental.sri`** (hashes) : testé avec Next 16.3.6 / Turbopack, il
   n'ajoute `integrity` qu'aux fichiers JS externes (6 sur 9) et **jamais aux
   scripts inline** ; il ne permet donc pas de retirer `'unsafe-inline'`.
 
-Le nonce est réservé à `/admin` et `/login` : `/admin` est déjà dynamique
-(vérification de session), `/login` l'est devenue (`connection()`) pour un
-coût négligeable. C'est là que se trouve la session admin.
+Le nonce est réservé à `/admin` et `/login` : `/admin` est de toute façon
+dynamique (vérification de session), `/login` l'est devenue (`connection()`)
+pour un coût négligeable. C'est là que se trouve la session admin.
 
 ### Ce qui compense sur les pages publiques
 
 - **Aucun rendu de HTML brut** dans le code : ni `dangerouslySetInnerHTML`, ni
-  `innerHTML`, ni `insertAdjacentHTML`. Tout contenu passe par React, qui
-  échappe le texte.
-- **Pas de contenu utilisateur ni d'IA rendu côté public aujourd'hui** : les
-  pages affichent le contenu maquette ; la base et Gemini ne sont exposés que
-  via des API JSON (`X-Content-Type-Options: nosniff`).
+  `innerHTML`, ni `insertAdjacentHTML`. `tests/qa-xss.test.tsx` vérifie
+  l'absence de `dangerouslySetInnerHTML` dans `app/`, `components/` et
+  `lib/`, et celle de `innerHTML` dans `components/admin/`.
+- **Contenu de la base rendu sans HTML** : les textes saisis dans l'admin
+  (articles, descriptions de projets) passent par `components/content/Markdown.tsx`
+  (`react-markdown` sans `rehype-raw`, `skipHtml`, liste blanche d'éléments,
+  liens `http(s)` uniquement). Les messages, réponses de l'assistant et
+  notifications sont rendus en texte simple, échappé par React.
 - **URL validées à l'écriture** : slugs limités à `[a-z0-9-]`, `liveUrl` /
   `repoUrl` limitées à `http(s)` (pas de `javascript:`).
 - **Session hors de portée d'un script** : cookie `HttpOnly`, et les pages qui
   la manipulent sont sous CSP stricte à nonce.
 - **Exfiltration limitée** : `connect-src`, `form-action`, `img-src` et
   `default-src` restreints à l'origine du site.
-
-Règle pour la suite (phase 3) : le contenu venant de la base ou de l'IA
-(articles, réponses du chatbot, messages) doit être rendu comme **texte** ;
-jamais de `dangerouslySetInnerHTML`, ni de conversion Markdown → HTML sans
-sanitizer.
+- **Pas de `'unsafe-eval'` en production** : Zod est configuré en mode
+  `jitless` (`lib/schemas/zod.ts`) pour ne pas tenter de compiler ses
+  validateurs avec `new Function`.
