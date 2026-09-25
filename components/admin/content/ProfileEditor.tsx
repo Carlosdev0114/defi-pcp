@@ -7,8 +7,9 @@ import { useRemote } from "@/lib/hooks/use-remote";
 import { fieldErrors, getConfig, putConfig } from "@/lib/admin/client";
 import { profileSchema, type Profile } from "@/lib/schemas/site";
 import { FieldError } from "./ContentBits";
+import { ProfilePhotoPicker, type PhotoItem } from "./ProfilePhotoPicker";
 
-const FIELDS: { key: Exclude<keyof Profile, "socials">; label: string; long?: boolean; hint?: string }[] = [
+const FIELDS: { key: Exclude<keyof Profile, "socials" | "photoMediaId">; label: string; long?: boolean; hint?: string }[] = [
   { key: "name", label: "Nom complet" },
   { key: "role", label: "Titre / rôle" },
   { key: "baseline", label: "Accroche (accueil)", long: true, hint: "La phrase courte sous le titre de l'accueil." },
@@ -18,8 +19,13 @@ const FIELDS: { key: Exclude<keyof Profile, "socials">; label: string; long?: bo
   { key: "location", label: "Localisation" },
 ];
 
-function ProfileForm({ initial }: { initial: Profile }) {
+function ProfileForm({ initial, initialPhoto }: { initial: Profile; initialPhoto: PhotoItem | null }) {
   const [v, setV] = useState<Profile>(initial);
+  const [photo, setPhoto] = useState<PhotoItem | null>(initialPhoto);
+  const pickPhoto = (p: PhotoItem | null) => {
+    setPhoto(p);
+    setV((x) => ({ ...x, photoMediaId: p?.id ?? null }));
+  };
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [state, setState] = useState<"idle" | "saving" | "saved">("idle");
 
@@ -39,6 +45,9 @@ function ProfileForm({ initial }: { initial: Profile }) {
 
   return (
     <form onSubmit={save} className="space-y-6">
+      <Panel title="Photo">
+        <ProfilePhotoPicker value={photo} onChange={pickPhoto} />
+      </Panel>
       <Panel title="Identité, présentation et coordonnées">
         <div className="grid gap-5 sm:grid-cols-2">
           {FIELDS.map((f) => (
@@ -69,12 +78,12 @@ function ProfileForm({ initial }: { initial: Profile }) {
 
 /** Profil public (Redis) : affiché sur tout le site et utilisé par le chatbot. */
 export function ProfileEditor() {
-  const { result } = useRemote("profile", () => getConfig<{ profile: Profile }>("profile"));
+  const { result } = useRemote("profile", () => getConfig<{ profile: Profile; photo: PhotoItem | null }>("profile"));
   return (
     <>
       <PageTitle eyebrow="Contenu · Profil" title="Profil public" description="Nom et coordonnées affichés sur tout le site (en-tête, pied de page, À propos, Contact) et connus du chatbot." />
       {result && !result.ok ? <ApiErrorNotice status={result.status} error={result.error} returnTo="/admin/profil" /> : null}
-      {result?.ok ? <ProfileForm initial={result.data.profile} /> : result ? null : <p className="font-mono text-xs text-ink-faint">Chargement…</p>}
+      {result?.ok ? <ProfileForm initial={result.data.profile} initialPhoto={result.data.photo} /> : result ? null : <p className="font-mono text-xs text-ink-faint">Chargement…</p>}
     </>
   );
 }

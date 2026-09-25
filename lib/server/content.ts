@@ -56,6 +56,13 @@ export async function getPublishedArticle(slug: string) {
   return a ? { ...a, coverMedia: a.coverMedia ? toMedia(a.coverMedia) : null, readMinutes: readingMinutes(a.content) } : null;
 }
 
+/** Photo du profil (média de la médiathèque) ; null si absente ou supprimée → espace réservé. */
+export async function getProfilePhoto(mediaId: string | null) {
+  if (!mediaId) return null;
+  const media = await db.media.findUnique({ where: { id: mediaId }, select: mediaSelect });
+  return media ? toMedia(media) : null;
+}
+
 export function getExperiences() {
   return db.experience.findMany({ orderBy: [{ order: "asc" }, { startDate: "desc" }] });
 }

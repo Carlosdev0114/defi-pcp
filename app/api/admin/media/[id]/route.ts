@@ -6,6 +6,17 @@ import { deleteStoredImage } from "@/lib/server/media";
 import { withMediaUrl } from "@/lib/server/storage";
 import { logActivity } from "@/lib/server/audit";
 import { revalidateContent } from "@/lib/server/revalidate";
+import { getProfile, setProfile } from "@/lib/server/site-config";
+
+/** La photo du profil vit dans Redis (pas de clé étrangère) : si ce média
+ * l'est, le site entier doit être régénéré, et une suppression efface la
+ * référence (le portrait repasse en espace réservé). */
+async function syncProfilePhoto(mediaId: string, deleted: boolean) {
+  const profile = await getProfile();
+  if (profile.photoMediaId !== mediaId) return;
+  if (deleted) await setProfile({ ...profile, photoMediaId: null });
+  await revalidateContent("profile");
+}
 
 type Ctx = RouteContext<"/api/admin/media/[id]">;
 
@@ -21,6 +32,7 @@ export function PATCH(req: NextRequest, ctx: Ctx) {
       return updated;
     });
     await revalidateContent("media");
+    await syncProfilePhoto(id, false);
     return NextResponse.json(withMediaUrl(media));
   });
 }
@@ -39,6 +51,7 @@ export function DELETE(_req: NextRequest, ctx: Ctx) {
     });
     await deleteStoredImage(media.url); // Media.url = clé de stockage
     await revalidateContent("media");
+    await syncProfilePhoto(id, true);
     return new NextResponse(null, { status: 204 });
   });
 }

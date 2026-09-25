@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/site/PageHeader";
-import { PortraitPlaceholder } from "@/components/site/PortraitPlaceholder";
+import { ProfilePortrait } from "@/components/site/ProfilePortrait";
 import { getProfile } from "@/lib/server/site-config";
 import { getExperiences, getPublishedSlugs } from "@/lib/server/content";
 import { SectionLabel } from "@/components/ui/buttons";
@@ -43,7 +43,7 @@ export default async function AboutPage() {
       <div className="page-pad mx-auto grid max-w-6xl gap-12 py-16 md:grid-cols-[0.9fr_1.1fr]">
         <div className="flex flex-col gap-6">
           <figure className="relative max-w-sm">
-            <PortraitPlaceholder name={profile.name} className="border-2 border-ink" />
+            <ProfilePortrait profile={profile} sizes="(min-width: 768px) 384px, 92vw" className="border-2 border-ink" />
           </figure>
           <ul className="grid grid-cols-2 gap-4">
             {highlighs.map((h) => (

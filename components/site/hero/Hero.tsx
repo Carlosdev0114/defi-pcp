@@ -19,7 +19,7 @@ export default function Hero({ profile }: { profile: Profile }) {
     <section className="border-b-2 border-ink">
       <div className="page-pad mx-auto grid max-w-6xl items-center gap-12 py-16 md:grid-cols-[1.15fr_0.85fr] md:py-24">
         <HeroContent profile={profile} />
-        <HeroVisual name={profile.name} />
+        <HeroVisual profile={profile} />
       </div>
       <Ticker items={tickerItems} />
     </section>

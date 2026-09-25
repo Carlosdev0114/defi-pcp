@@ -18,6 +18,9 @@ export const profileSchema = z
     email: z.union([z.literal(""), z.email({ error: "Adresse e-mail invalide." }).max(254)]),
     phone: text(40),
     location: text(160),
+    // Photo : un média de la médiathèque (identifiant), ou null → espace
+    // réservé. Optionnel : un profil enregistré avant ce champ reste valide.
+    photoMediaId: z.string().max(64).regex(/^[a-z0-9]+$/i, "Identifiant invalide.").nullable().default(null),
     socials: z
       .object({
         github: text(200),
@@ -36,6 +39,7 @@ export const DEFAULT_PROFILE: Profile = {
   email: "",
   phone: "",
   location: "",
+  photoMediaId: null,
   socials: { github: "", linkedin: "", mastodon: "" },
 };
 
